@@ -1,0 +1,65 @@
+# Editors
+.vscode/
+test.py
+
+# Windows
+Thumbs.db
+
+# Source for the following rules: https://raw.githubusercontent.com/github/gitignore/master/Python.gitignore
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+
+# Distribution / packaging
+.Python
+#build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# pyenv
+.python-version
+__pycache__/
+
+# Environments
+.env
+.venv
+.labo
+env/
+venv/
+labo/
+target/
+ENV/
+test/
+env.bak/
+venv.bak/
+.vscode/settings.json
+.vscode/settings.json
+*.pyc
+__pycache__/monModule.cpython-38.pyc
+src/main/python/param.json
+src/build/settings/secret.json
