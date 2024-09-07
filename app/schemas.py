@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 from datetime import date, time
-from typing import List
+from typing import List, Optional
 
 class UtilisateurBase(BaseModel):
     nom: str

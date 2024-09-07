@@ -12,6 +12,7 @@ from app.services import (
     create_repas, get_repas, get_repas_by_type, get_repas_by_date,
     get_repas_by_id, update_repas, delete_repas,
     add_aliment_to_repas, get_repas_aliment, update_repas_aliment,
+    delete_repas_aliment,
     create_activite_physique, create_poids, get_total_calories_for_repas,
 )
 
@@ -247,20 +248,44 @@ def test_create_repas_aliment(db_session):
 def test_get_repas_aliment(db_session, repas_aliments): 
     repas_aliment_get = get_repas_aliment(
         db=db_session,
-        repas_id=repas_aliments[0].repas_id,
-        aliment_id=repas_aliments[0].aliment_id
+        repas_id=repas_aliments[-1].repas.id,
+        aliment_id=repas_aliments[-1].aliment.id
     )
 
     assert repas_aliment_get != None
-    assert repas_aliment_get.repas_id == repas_aliments[0].repas_id
-    assert repas_aliment_get.aliment == repas_aliments[0].aliment_id
-    assert repas_aliment_get.quantite == repas_aliments[0].quantite
-    assert repas_aliment_get.calories_totales == repas_aliments[0].calories_totales
+    assert repas_aliment_get.repas_id == repas_aliments[-1].repas_id
+    assert repas_aliment_get.aliment.id == repas_aliments[-1].aliment_id
+    assert repas_aliment_get.quantite == repas_aliments[-1].quantite
+    assert repas_aliment_get.calories_totales == repas_aliments[-1].calories_totales
 
 #  Update
-def test_update_repas_aliment(db_session):
-    pass
+def test_update_repas_aliment(db_session, repas_aliments):
+    repas_aliment_get = get_repas_aliment(
+        db=db_session,
+        repas_id=repas_aliments[-1].repas.id,
+        aliment_id=repas_aliments[-1].aliment.id
+    )
+    repas_aliment_get.quantite = 120
+    repas_aliment_updated = update_repas_aliment(
+        db=db_session,
+        repas_aliment=repas_aliment_get
+    )
+    assert repas_aliment_updated.quantite == 120
+    assert repas_aliment_updated.repas_id == repas_aliment_get.repas_id
+    assert repas_aliment_updated.aliment.id == repas_aliment_get.aliment.id
+    assert repas_aliment_updated.calories_totales == repas_aliment_get.calories_totales
 
 # Delete
-def test_delete_repas_aliment(db_session):
-    pass
+def test_delete_repas_aliment(db_session, repas_aliments):
+    repas_aliment_get = get_repas_aliment(
+        db=db_session,
+        repas_id=repas_aliments[-1].repas.id,
+        aliment_id=repas_aliments[-1].aliment.id
+    )
+    assert delete_repas_aliment(db=db_session, repas_aliment=repas_aliment_get)
+    repas_aliment_get = get_repas_aliment(
+        db=db_session,
+        repas_id=repas_aliments[-1].repas.id,
+        aliment_id=repas_aliments[-1].aliment.id
+    )
+    assert repas_aliment_get == None

@@ -102,10 +102,12 @@ def repas_aliments(db_session: Session, aliments, repas):
             repas_aliments_data.append(RepasAliment(
                 repas=repa,
                 aliment=aliment,
-                quantite=100
+                quantite=100,
+                calories_totales=aliment.calories * 100
             ))
 
     db_session.add_all(repas_aliments_data)
+    db_session.commit()
     return repas_aliments_data
 
 def populate_db(db: Session):
@@ -167,3 +169,4 @@ def populate_db(db: Session):
         db.add(db_aliment)
 
     db.commit()
+    

@@ -37,7 +37,7 @@ class Aliment(Base):
 class RepasAliment(Base):
     __tablename__ ='repas_aliments'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     repas_id = Column(Integer, ForeignKey('repas.id'))
     aliment_id = Column(Integer, ForeignKey('aliments.id'))
     quantite = Column(Float)

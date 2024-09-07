@@ -279,7 +279,10 @@ def add_aliment_to_repas(db: Session, repas_id: int, aliment: AlimentOut, quanti
 
 # TODO: Read
 def get_repas_aliment(db: Session, repas_id: int, aliment_id: int):
-    db_repas_aliment = db.query(RepasAliment).join(RepasAliment.repas).join(RepasAliment.aliment).filter(Repas.id == repas_id, Aliment.id == aliment_id).first()
+    db_repas_aliment = db.query(RepasAliment)\
+        .join(Repas, RepasAliment.repas_id == Repas.id)\
+        .join(Aliment, RepasAliment.aliment_id == Aliment.id)\
+        .filter(Repas.id == repas_id, Aliment.id == aliment_id).first()
     if db_repas_aliment:
         repas_aliment = RepasAlimentOutOne(
             aliment = get_aliment(db, db_repas_aliment.aliment_id),
@@ -291,12 +294,36 @@ def get_repas_aliment(db: Session, repas_id: int, aliment_id: int):
     return None
 
 # TODO: Update
-def update_repas_aliment():
-    pass
+def update_repas_aliment(db: Session, repas_aliment: RepasAlimentOutOne):
+    db_repas_aliment = db.query(RepasAliment)\
+    .join(Repas, RepasAliment.repas_id == Repas.id)\
+    .join(Aliment, RepasAliment.aliment_id == Aliment.id)\
+    .filter(Repas.id == repas_aliment.repas_id, Aliment.id == repas_aliment.aliment.id).first()
+    if db_repas_aliment:
+        db_repas_aliment.quantite = repas_aliment.quantite
+        db_repas_aliment.calories_totales = repas_aliment.calories_totales
+        db.commit()
+        db.refresh(db_repas_aliment)
+        selected_repas_aliment = RepasAlimentOutOne(
+            aliment = get_aliment(db, db_repas_aliment.aliment_id),
+            quantite = db_repas_aliment.quantite,
+            calories_totales = db_repas_aliment.calories_totales,
+            repas_id = db_repas_aliment.repas_id
+        )
+        return selected_repas_aliment
+    return None
 
 # TODO: Delete
-def delete_repas_aliment():
-    pass
+def delete_repas_aliment(db: Session, repas_aliment: RepasAlimentOutOne):
+    db_repas_aliment = db.query(RepasAliment)\
+        .join(Repas, RepasAliment.repas_id == Repas.id)\
+        .join(Aliment, RepasAliment.aliment_id == Aliment.id)\
+        .filter(Repas.id == repas_aliment.repas_id, Aliment.id == repas_aliment.aliment.id).first()
+    if db_repas_aliment:
+        db.delete(db_repas_aliment)
+        db.commit()
+        return True
+    return False
 
 # activité physique CRUD
 def create_activite_physique(db: Session, activite: ActivitePhysiqueCreate, utilisateur_id: int):
