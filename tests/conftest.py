@@ -110,6 +110,34 @@ def repas_aliments(db_session: Session, aliments, repas):
     db_session.commit()
     return repas_aliments_data
 
+@pytest.fixture(scope="function")
+def activites(db_session: Session, utilisateurs):
+    activites_data = [
+        ActivitePhysique(
+            type_activite=f"activite{key}",
+            date=datetime.date(2023, 1, 1),
+            heure=datetime.time(12, 0),
+            duree=datetime.timedelta(hours=1).total_seconds(),
+            utilisateur_id=utilisateur.id
+        ) for key, utilisateur in enumerate(utilisateurs)
+    ]
+    db_session.add_all(activites_data)
+    db_session.commit()
+    return activites_data
+
+@pytest.fixture(scope="function")
+def poids(db_session: Session, utilisateurs):
+    poids_data = [
+        Poids(
+            date=datetime.date(2023, 1, 1),
+            poids=71,
+            utilisateur_id=utilisateur.id
+        ) for utilisateur in utilisateurs
+    ]
+    db_session.add_all(poids_data)
+    db_session.commit()
+    return poids_data
+
 def populate_db(db: Session):
     # Utilisateurs
     users = [

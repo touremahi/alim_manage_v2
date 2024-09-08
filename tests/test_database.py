@@ -2,7 +2,7 @@ import datetime
 
 from app.schemas import (
     UtilisateurCreate, AlimentCreate, RepasCreate, 
-    ActivitePhysiqueCreate, ListeRepasOut
+    ActivitePhysiqueCreate, PoidsCreate
 )
 from app.services import (
     create_utilisateur, get_utilisateur, get_utilisateurs,
@@ -13,7 +13,9 @@ from app.services import (
     get_repas_by_id, update_repas, delete_repas,
     add_aliment_to_repas, get_repas_aliment, update_repas_aliment,
     delete_repas_aliment,
-    create_activite_physique, create_poids, get_total_calories_for_repas,
+    create_activite_physique, get_activite_physique, update_activite_physique,
+    delete_activite_physique, create_poids, get_poids, update_poids,
+    delete_poids, get_total_calories_for_repas
 )
 
 # CRUD test utilisateur
@@ -66,7 +68,7 @@ def test_update_utilisateur(db_session, utilisateurs):
     assert db_utilisateur_updated.age == db_utilisateur_get.age
     assert db_utilisateur_updated.poids_initial == db_utilisateur_get.poids_initial
 
-# TODO Update password
+# Update password
 def test_update_utilisateur_password(db_session, utilisateurs):
     pass
 
@@ -184,7 +186,7 @@ def test_get_repas(db_session, utilisateurs, repas, repas_aliments):
     assert db_repas_get[-1].date == repas[-1].date
     assert db_repas_get[-1].heure == repas[-1].heure
 
-# TODO 
+# test get repas by date
 def test_get_repas_by_date(db_session, utilisateurs, repas, repas_aliments):
     utilisateur_get = get_utilisateur(db=db_session, id=utilisateurs[-1].id)
 
@@ -197,7 +199,7 @@ def test_get_repas_by_date(db_session, utilisateurs, repas, repas_aliments):
     for repa in db_repas_get:
         assert repa.date == repas[-1].date
 
-# TODO 
+# test get repas by type
 def test_get_repas_by_type(db_session, utilisateurs, repas, repas_aliments):
     utilisateur_get = get_utilisateur(db=db_session, id=utilisateurs[-1].id)
 
@@ -210,7 +212,7 @@ def test_get_repas_by_type(db_session, utilisateurs, repas, repas_aliments):
     for repa in db_repas_get:
         assert repa.type_repas == repas[-1].type_repas
 
-# TODO
+# test get repas by id
 def test_get_repas_by_id(db_session, utilisateurs, repas, repas_aliments):
     repas_db_get = get_repas_by_id(db=db_session, id=repas[-1].id)
     assert repas_db_get != None
@@ -289,3 +291,147 @@ def test_delete_repas_aliment(db_session, repas_aliments):
         aliment_id=repas_aliments[-1].aliment.id
     )
     assert repas_aliment_get == None
+
+# CRUD test Activite physique
+# Create
+def test_create_activite_physique(db_session, utilisateurs):
+    activite_physique = ActivitePhysiqueCreate(
+        date=datetime.date(2024,9,8),
+        heure=datetime.time(1,0,0),
+        duree=datetime.timedelta(seconds=3600),
+        type_activite="Course à pied",
+    )
+    db_activite = create_activite_physique(
+        db=db_session,
+        activite=activite_physique,
+        utilisateur_id=utilisateurs[-1].id
+    )
+    assert db_activite != None
+    assert db_activite.utilisateur_id == utilisateurs[-1].id
+    assert db_activite.date == activite_physique.date
+    assert db_activite.duree == activite_physique.duree.total_seconds()
+    assert db_activite.type_activite == activite_physique.type_activite
+
+def test_get_activite_physique(db_session, utilisateurs, activites):
+    utilisateur_get = get_utilisateur(db=db_session, id=utilisateurs[-1].id)
+    activite_physique_get = get_activite_physique(
+        db=db_session,
+        utilisateur=utilisateur_get,
+        id=activites[-1].id
+    )
+    assert activite_physique_get != None
+    assert len(activite_physique_get) == 1
+    assert activite_physique_get[0].utilisateur_id == utilisateurs[-1].id
+    assert activite_physique_get[0].date == activites[-1].date
+    assert activite_physique_get[0].duree == datetime.timedelta(seconds=activites[-1].duree)
+    assert activite_physique_get[0].type_activite == activites[-1].type_activite
+
+def test_update_activite_physique(db_session, utilisateurs, activites):
+    utilisateur_get = get_utilisateur(db=db_session, id=utilisateurs[-1].id)
+    activite_physique_get = get_activite_physique(
+        db=db_session,
+        utilisateur=utilisateur_get,
+        id=activites[-1].id
+    )
+    activite_physique_get[0].type_activite = "Course à pied"
+    activite_physique_get[0].date = datetime.date(2024,9,10)
+    activite_physique_get[0].heure = datetime.time(10,0,0)
+    activite_physique_get[0].duree = datetime.timedelta(days=3600)
+
+    activite_physique_updated = update_activite_physique(
+        db=db_session,
+        activite=activite_physique_get[0]
+    )
+    assert activite_physique_updated.type_activite == activite_physique_get[0].type_activite
+    assert activite_physique_updated.utilisateur_id == activite_physique_get[0].utilisateur_id
+    assert activite_physique_updated.date == datetime.date(2024,9,10)
+    assert activite_physique_updated.heure == datetime.time(10,0,0)
+    assert activite_physique_updated.duree == datetime.timedelta(days=3600)
+
+def test_delete_activite_physique(db_session, utilisateurs, activites):
+    utilisateur_get = get_utilisateur(db=db_session, id=utilisateurs[-1].id)
+    activite_physique_get = get_activite_physique(
+        db=db_session,
+        utilisateur=utilisateur_get,
+        id=activites[-1].id
+    )[0]
+    assert delete_activite_physique(db=db_session, activite=activite_physique_get)
+    activite_physique_get = get_activite_physique(
+        db=db_session,
+        utilisateur=utilisateur_get,
+        id=activites[-1].id
+    )
+    assert activite_physique_get == None
+
+def test_create_poids(db_session, utilisateurs):
+    utilisateur_get = get_utilisateur(db=db_session, id=utilisateurs[-1].id)
+    poids = PoidsCreate(
+        date=datetime.date(2024,9,8),
+        poids=70.0,
+        utilisateur=utilisateur_get
+    )
+    db_poids = create_poids(
+        db=db_session,
+        poids=poids
+    )
+    assert db_poids != None
+    assert db_poids.utilisateur_id == utilisateur_get.id
+    assert db_poids.date == poids.date
+    assert db_poids.poids == poids.poids
+
+def test_get_poids(db_session, utilisateurs, poids):
+    utilisateur_get = get_utilisateur(db=db_session, id=utilisateurs[-1].id)
+    poids_get = get_poids(
+        db=db_session,
+        utilisateur=utilisateur_get,
+        id=poids[-1].id
+    )
+    assert poids_get != None
+    assert len(poids_get) == 1
+    assert poids_get[0].utilisateur.id == utilisateurs[-1].id
+    assert poids_get[0].date == poids[-1].date
+    assert poids_get[0].poids == poids[-1].poids
+
+    poids_get = get_poids(
+        db=db_session,
+        utilisateur=utilisateur_get
+    )
+    assert poids_get != None
+    assert len(poids_get) >= 1
+    for poids_get_item in poids_get:
+        assert poids_get_item.utilisateur == utilisateur_get
+
+def test_update_poids(db_session, utilisateurs, poids):
+    utilisateur_get = get_utilisateur(db=db_session, id=utilisateurs[-1].id)
+    poids_get = get_poids(
+        db=db_session,
+        utilisateur=utilisateur_get,
+        id=poids[-1].id
+    )[0]
+    poids_get.poids = 70.0
+    poids_get.date = datetime.date(2024,9,10)
+    poids_updated = update_poids(
+        db=db_session,
+        poids=poids_get
+    )
+    
+    assert poids_updated != None
+    assert poids_updated.id == poids_get.id
+    assert poids_updated.poids == poids_get.poids
+    assert poids_updated.date == poids_get.date
+    assert poids_updated.utilisateur == poids_get.utilisateur
+
+def test_delete_poids(db_session, utilisateurs, poids):
+    utilisateur_get = get_utilisateur(db=db_session, id=utilisateurs[-1].id)
+    poids_get = get_poids(
+        db=db_session,
+        utilisateur=utilisateur_get,
+        id=poids[-1].id
+    )[0]
+    assert delete_poids(db=db_session, poids=poids_get)
+    poids_get = get_poids(
+        db=db_session,
+        utilisateur=utilisateur_get,
+        id=poids[-1].id
+    )
+    assert poids_get == None

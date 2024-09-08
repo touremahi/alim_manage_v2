@@ -15,7 +15,7 @@ class Utilisateur(Base):
 class Repas(Base):
     __tablename__ ='repas'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     type_repas = Column(String(100))
     date = Column(Date)
     heure = Column(Time)
@@ -26,7 +26,7 @@ class Repas(Base):
 class Aliment(Base):
     __tablename__ = 'aliments'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     nom = Column(String(100))
     calories = Column(Float)
     unite = Column(String(100))
@@ -49,7 +49,7 @@ class RepasAliment(Base):
 class ActivitePhysique(Base):
     __tablename__ = 'activites_physiques'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     type_activite = Column(String(100))
     date = Column(Date)
     heure = Column(Time)
@@ -59,7 +59,7 @@ class ActivitePhysique(Base):
 class Poids(Base):
     __tablename__ = 'poids'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     date = Column(Date)
     poids = Column(Float)
     utilisateur_id = Column(Integer, ForeignKey('utilisateurs.id'))

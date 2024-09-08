@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict
-from datetime import date, time
+from datetime import date, time, timedelta
 from typing import List, Optional
 
 class UtilisateurBase(BaseModel):
@@ -69,7 +69,7 @@ class ActivitePhysiqueBase(BaseModel):
     type_activite: str
     date: date
     heure: time
-    duree: float
+    duree: timedelta
 
 class ActivitePhysiqueCreate(ActivitePhysiqueBase):
     pass
@@ -84,8 +84,13 @@ class PoidsBase(BaseModel):
     date: date
     poids: float
 
+class PoidsCreate(PoidsBase):
+    utilisateur: UtilisateurOut
+
+    model_config = ConfigDict(from_attributes = True)
+
 class PoidsOut(PoidsBase):
     id: int
-    utilisateur_id: int
-    
+    utilisateur: UtilisateurOut
+
     model_config = ConfigDict(from_attributes = True)
