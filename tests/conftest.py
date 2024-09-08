@@ -1,10 +1,12 @@
 import datetime
 
 import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 
-from app.database import Base, init_db
+from app.config import settings
+from app.database import Base, get_db
 from app.schemas import (
     ActivitePhysiqueCreate, AlimentCreate, RepasCreate,
     UtilisateurCreate, UtilisateurOut
@@ -14,9 +16,12 @@ from app.models import (
     RepasAliment, Utilisateur, Poids
 )
 
+from app.main import app
+
+DATABASE_URL = settings.database_url
 
 engine = create_engine(
-    "sqlite:///./test.db", connect_args={"check_same_thread": False}
+    DATABASE_URL, connect_args={"check_same_thread": False}
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -26,11 +31,24 @@ def db_session():
     db = SessionLocal()
 
     try:
-        populate_db(db)
+        # populate_db(db)
         yield db
     finally:
         db.close()
         Base.metadata.drop_all(bind=engine)
+
+@pytest.fixture(scope="function")
+def client(db_session: Session):
+    def override_get_db():
+        try:
+            yield db_session
+        finally:
+            db_session.close()
+    
+    app.dependency_overrides[get_db] = override_get_db
+    with TestClient(app) as client:
+        yield client
+    app.dependency_overrides.clear()
 
 @pytest.fixture(scope="function")
 def utilisateurs(db_session: Session):

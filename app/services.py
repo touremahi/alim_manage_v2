@@ -1,7 +1,6 @@
 import datetime
 
 from sqlalchemy import func
-
 from sqlalchemy.orm import Session
 from .models import (
     Aliment, Repas, RepasAliment,
@@ -13,8 +12,7 @@ from .schemas import (
     RepasAlimentOut, RepasCreate, RepasAlimentOutOne,
     RepasOut, ListeRepasOut,
     ActivitePhysiqueCreate, ActivitePhysiqueOut,
-    PoidsCreate, PoidsOut, PoidsBase
-    
+    PoidsCreate, PoidsOut
 )
 
 # utilisateur CRUD
@@ -83,8 +81,8 @@ def update_utilisateur_password(db: Session, utilisateur: UtilisateurOut, new_pa
     pass
 
 # Delete
-def delete_utilisateur(db: Session, utilisateur: UtilisateurOut):
-    db_utilisateur = db.query(Utilisateur).filter(Utilisateur.id == utilisateur.id).first()
+def delete_utilisateur(db: Session, utilisateur_id: int):
+    db_utilisateur = db.query(Utilisateur).filter(Utilisateur.id == utilisateur_id).first()
     if db_utilisateur:
         db.delete(db_utilisateur)
         db.commit()
@@ -145,8 +143,8 @@ def get_aliments_by_categorie(db: Session, categorie: str):
     return selected_aliments
 
 #  Update
-def update_aliment(db: Session, aliment: AlimentOut):
-    db_aliment = db.query(Aliment).filter(Aliment.id == aliment.id).first()
+def update_aliment(db: Session, id:int, aliment: AlimentCreate):
+    db_aliment = db.query(Aliment).filter(Aliment.id == id).first()
     if db_aliment:
         db_aliment.nom = aliment.nom
         db_aliment.calories = aliment.calories
@@ -165,8 +163,8 @@ def update_aliment(db: Session, aliment: AlimentOut):
     return None
 
 # Delete
-def delete_aliment(db: Session, aliment: AlimentOut):
-    db_aliment = db.query(Aliment).filter(Aliment.id == aliment.id).first()
+def delete_aliment(db: Session, id: int):
+    db_aliment = db.query(Aliment).filter(Aliment.id == id).first()
     if db_aliment:
         db.delete(db_aliment)
         db.commit()
@@ -180,7 +178,7 @@ def create_repas(db: Session, repas: RepasCreate):
         type_repas=repas.type_repas,
         date=repas.date,
         heure=repas.heure,
-        utilisateur_id=repas.utilisateur.id
+        utilisateur_id=repas.utilisateur_id
     )
     db.add(db_repas)
     db.commit()
@@ -211,8 +209,8 @@ def query_repas(db: Session, db_repas: list):
     return repas_data
 
 # Read
-def get_repas(db: Session, utilisateur: UtilisateurOut):
-    db_repas = db.query(Repas).filter(Repas.utilisateur_id == utilisateur.id).all()
+def get_repas(db: Session, utilisateur_id: int):
+    db_repas = db.query(Repas).filter(Repas.utilisateur_id == utilisateur_id).all()
     if db_repas:
         return query_repas(db, db_repas)
     return None

@@ -76,8 +76,7 @@ def test_update_utilisateur_password(db_session, utilisateurs):
 def test_delete_utilisateur(db_session, utilisateurs):
     db_utilisateur = utilisateurs[-1]
 
-    db_utilisateur_get = get_utilisateur(db=db_session, id=db_utilisateur.id)
-    assert delete_utilisateur(db=db_session, utilisateur=db_utilisateur_get)
+    assert delete_utilisateur(db=db_session, utilisateur_id=db_utilisateur.id)
     db_utilisateur_get = get_utilisateur(db=db_session, id=db_utilisateur.id)
     assert db_utilisateur_get == None
 
@@ -123,41 +122,40 @@ def test_get_aliments_by_categorie(db_session, aliments):
 
 # Update
 def test_update_aliment(db_session, aliments):
-    db_aliment_get = get_aliment(db=db_session, id=aliments[-1].id)
-    db_aliment_get.nom = "Yaourt"
-    db_aliment_get.calories = 150
-    db_aliment_get.unite = "g"
-    db_aliment_get.categorie = "Laitage"
-    db_aliment_updated = update_aliment(db=db_session, aliment=db_aliment_get)
+    aliment_update = AlimentCreate(
+        nom="Yaourt",
+        calories=150,
+        unite="g",
+        categorie="Laitage"
+    )
+    db_aliment_updated = update_aliment(db=db_session, id=aliments[-1].id, aliment=aliment_update)
 
-    assert db_aliment_updated.nom == db_aliment_get.nom
-    assert db_aliment_updated.calories == db_aliment_get.calories
-    assert db_aliment_updated.unite == db_aliment_get.unite
-    assert db_aliment_updated.categorie == db_aliment_get.categorie
-    assert db_aliment_updated.id == db_aliment_get.id
+    assert db_aliment_updated.nom == aliment_update.nom
+    assert db_aliment_updated.calories == aliment_update.calories
+    assert db_aliment_updated.unite == aliment_update.unite
+    assert db_aliment_updated.categorie == aliment_update.categorie
+    assert db_aliment_updated.id == aliments[-1].id
 
 # Delete
 def test_delete_aliment(db_session, aliments):
-    db_aliment_get = get_aliment(db=db_session, id=aliments[-1].id)
-    assert delete_aliment(db=db_session, aliment=db_aliment_get)
+    assert delete_aliment(db=db_session, id=aliments[-1].id)
     db_aliment_get = get_aliment(db=db_session, id=aliments[-1].id)
     assert db_aliment_get == None
 
 # CRUD test repas
 # Create
 def test_create_repas(db_session, utilisateurs):
-    utilisateur_get = get_utilisateur(db=db_session, id=utilisateurs[-1].id)
     repas = RepasCreate(
         type_repas="Déjeuner",
         date=datetime.date(2024,9,10),
         heure=datetime.time(10,0,0),
-        utilisateur=utilisateur_get
+        utilisateur_id=utilisateurs[-1].id
     )
     db_repas = create_repas(db=db_session, repas=repas)
     assert db_repas.type_repas == repas.type_repas
     assert db_repas.date == repas.date
     assert db_repas.heure == repas.heure
-    assert db_repas.utilisateur_id == utilisateur_get.id
+    assert db_repas.utilisateur_id == utilisateurs[-1].id
 
 # test add aliment to repas
 def test_add_aliment_to_repas(db_session, aliments, repas):
@@ -176,9 +174,7 @@ def test_add_aliment_to_repas(db_session, aliments, repas):
 
 # Read
 def test_get_repas(db_session, utilisateurs, repas, repas_aliments):
-    utilisateur_get = get_utilisateur(db=db_session, id=utilisateurs[-1].id)
-
-    db_repas_get = get_repas(db=db_session, utilisateur=utilisateur_get)
+    db_repas_get = get_repas(db=db_session, utilisateur_id=utilisateurs[-1].id)
     
     assert db_repas_get != None
     assert db_repas_get[-1].id == repas[-1].id

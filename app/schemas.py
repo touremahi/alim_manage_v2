@@ -52,7 +52,7 @@ class RepasBase(BaseModel):
     heure: time
 
 class RepasCreate(RepasBase):
-    utilisateur: UtilisateurOut
+    utilisateur_id: int
 
 class RepasOut(RepasBase):
     id: int

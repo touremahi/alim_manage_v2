@@ -7,7 +7,7 @@ class Utilisateur(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     nom = Column(String)
-    email = Column(String)#, unique=True, index=True, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=False)
     mot_de_passe = Column(String)
     age = Column(Integer)
     poids_initial = Column(Float)
@@ -27,7 +27,7 @@ class Aliment(Base):
     __tablename__ = 'aliments'
 
     id = Column(Integer, primary_key=True, index=True)
-    nom = Column(String(100))
+    nom = Column(String(100), unique=True, index=True, nullable=False)
     calories = Column(Float)
     unite = Column(String(100))
     categorie = Column(String(100))
@@ -50,7 +50,7 @@ class ActivitePhysique(Base):
     __tablename__ = 'activites_physiques'
 
     id = Column(Integer, primary_key=True, index=True)
-    type_activite = Column(String(100))
+    type_activite = Column(String(100), unique=True, index=True, nullable=False)
     date = Column(Date)
     heure = Column(Time)
     duree = Column(Float)
