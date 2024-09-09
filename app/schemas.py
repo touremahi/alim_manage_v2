@@ -40,9 +40,9 @@ class RepasAlimentOut(RepasAlimentBase):
 
     model_config = ConfigDict(from_attributes = True)
 
-class RepasAlimentOutOne(RepasAlimentBase):
+class RepasAlimentCreate(RepasAlimentBase):
     repas_id: int
-    aliment: AlimentOut
+    aliment_id: int
 
     model_config = ConfigDict(from_attributes = True)
 
@@ -72,11 +72,12 @@ class ActivitePhysiqueBase(BaseModel):
     duree: timedelta
 
 class ActivitePhysiqueCreate(ActivitePhysiqueBase):
-    pass
+    utilisateur_id: Optional[int] = None
 
 class ActivitePhysiqueOut(ActivitePhysiqueBase):
     id: int
     utilisateur_id: int
+    duree: float
     
     model_config = ConfigDict(from_attributes = True)
 
@@ -85,12 +86,12 @@ class PoidsBase(BaseModel):
     poids: float
 
 class PoidsCreate(PoidsBase):
-    utilisateur: UtilisateurOut
+    utilisateur_id: int
 
     model_config = ConfigDict(from_attributes = True)
 
 class PoidsOut(PoidsBase):
     id: int
-    utilisateur: UtilisateurOut
+    utilisateur_id: int
 
     model_config = ConfigDict(from_attributes = True)

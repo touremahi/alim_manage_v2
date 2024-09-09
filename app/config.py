@@ -14,7 +14,7 @@ class Settings:
         elif self.environment == "test_api":
             self.database_url = os.getenv("DATABASE_URL_TEST_API")
         elif self.environment == "production":
-            self.database_url = os.getenv("DATABASE_URL_PRODUCTION")
+            self.database_url = os.getenv("DATABASE_URL_PROD")
         else:
             raise ValueError(f"Invalid environment : {self.environment}" )
 

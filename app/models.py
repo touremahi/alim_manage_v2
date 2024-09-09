@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Integer, String, Float, Date, Time, ForeignKey
+from sqlalchemy import (
+    Column, Integer, String, Float, Date, Time, ForeignKey
+)
 from sqlalchemy.orm import relationship
 from .database import Base
 
@@ -50,7 +52,7 @@ class ActivitePhysique(Base):
     __tablename__ = 'activites_physiques'
 
     id = Column(Integer, primary_key=True, index=True)
-    type_activite = Column(String(100), unique=True, index=True, nullable=False)
+    type_activite = Column(String(100), nullable=False)
     date = Column(Date)
     heure = Column(Time)
     duree = Column(Float)
