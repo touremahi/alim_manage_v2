@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Integer, String, Float, Date, Time, ForeignKey
+from sqlalchemy import (
+    Column, Integer, String, Float, Date, Time, ForeignKey
+)
 from sqlalchemy.orm import relationship
 from .database import Base
 
@@ -7,7 +9,7 @@ class Utilisateur(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     nom = Column(String)
-    email = Column(String)#, unique=True, index=True, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=False)
     mot_de_passe = Column(String)
     age = Column(Integer)
     poids_initial = Column(Float)
@@ -15,7 +17,7 @@ class Utilisateur(Base):
 class Repas(Base):
     __tablename__ ='repas'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     type_repas = Column(String(100))
     date = Column(Date)
     heure = Column(Time)
@@ -26,8 +28,8 @@ class Repas(Base):
 class Aliment(Base):
     __tablename__ = 'aliments'
 
-    id = Column(Integer, primary_key=True)
-    nom = Column(String(100))
+    id = Column(Integer, primary_key=True, index=True)
+    nom = Column(String(100), unique=True, index=True, nullable=False)
     calories = Column(Float)
     unite = Column(String(100))
     categorie = Column(String(100))
@@ -37,7 +39,7 @@ class Aliment(Base):
 class RepasAliment(Base):
     __tablename__ ='repas_aliments'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     repas_id = Column(Integer, ForeignKey('repas.id'))
     aliment_id = Column(Integer, ForeignKey('aliments.id'))
     quantite = Column(Float)
@@ -49,8 +51,8 @@ class RepasAliment(Base):
 class ActivitePhysique(Base):
     __tablename__ = 'activites_physiques'
 
-    id = Column(Integer, primary_key=True)
-    type_activite = Column(String(100))
+    id = Column(Integer, primary_key=True, index=True)
+    type_activite = Column(String(100), nullable=False)
     date = Column(Date)
     heure = Column(Time)
     duree = Column(Float)
@@ -59,7 +61,7 @@ class ActivitePhysique(Base):
 class Poids(Base):
     __tablename__ = 'poids'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     date = Column(Date)
     poids = Column(Float)
     utilisateur_id = Column(Integer, ForeignKey('utilisateurs.id'))

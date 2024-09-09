@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict
-from datetime import date, time
-from typing import List
+from datetime import date, time, timedelta
+from typing import List, Optional
 
 class UtilisateurBase(BaseModel):
     nom: str
@@ -40,9 +40,9 @@ class RepasAlimentOut(RepasAlimentBase):
 
     model_config = ConfigDict(from_attributes = True)
 
-class RepasAlimentOutOne(RepasAlimentBase):
+class RepasAlimentCreate(RepasAlimentBase):
     repas_id: int
-    aliment: AlimentOut
+    aliment_id: int
 
     model_config = ConfigDict(from_attributes = True)
 
@@ -52,7 +52,7 @@ class RepasBase(BaseModel):
     heure: time
 
 class RepasCreate(RepasBase):
-    utilisateur: UtilisateurOut
+    utilisateur_id: int
 
 class RepasOut(RepasBase):
     id: int
@@ -69,14 +69,15 @@ class ActivitePhysiqueBase(BaseModel):
     type_activite: str
     date: date
     heure: time
-    duree: float
+    duree: timedelta
 
 class ActivitePhysiqueCreate(ActivitePhysiqueBase):
-    pass
+    utilisateur_id: Optional[int] = None
 
 class ActivitePhysiqueOut(ActivitePhysiqueBase):
     id: int
     utilisateur_id: int
+    duree: float
     
     model_config = ConfigDict(from_attributes = True)
 
@@ -84,8 +85,13 @@ class PoidsBase(BaseModel):
     date: date
     poids: float
 
+class PoidsCreate(PoidsBase):
+    utilisateur_id: int
+
+    model_config = ConfigDict(from_attributes = True)
+
 class PoidsOut(PoidsBase):
     id: int
     utilisateur_id: int
-    
+
     model_config = ConfigDict(from_attributes = True)

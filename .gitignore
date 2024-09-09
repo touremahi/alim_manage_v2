@@ -63,3 +63,6 @@ venv.bak/
 __pycache__/monModule.cpython-38.pyc
 src/main/python/param.json
 src/build/settings/secret.json
+
+# databases
+*.db

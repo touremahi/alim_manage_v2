@@ -1,10 +1,12 @@
 import datetime
 
 import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 
-from app.database import Base, init_db
+from app.config import settings
+from app.database import Base, get_db
 from app.schemas import (
     ActivitePhysiqueCreate, AlimentCreate, RepasCreate,
     UtilisateurCreate, UtilisateurOut
@@ -14,9 +16,12 @@ from app.models import (
     RepasAliment, Utilisateur, Poids
 )
 
+from app.main import app
+
+DATABASE_URL = settings.database_url
 
 engine = create_engine(
-    "sqlite:///./test.db", connect_args={"check_same_thread": False}
+    DATABASE_URL, connect_args={"check_same_thread": False}
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -26,11 +31,24 @@ def db_session():
     db = SessionLocal()
 
     try:
-        populate_db(db)
+        # populate_db(db)
         yield db
     finally:
         db.close()
         Base.metadata.drop_all(bind=engine)
+
+@pytest.fixture(scope="function")
+def client(db_session: Session):
+    def override_get_db():
+        try:
+            yield db_session
+        finally:
+            db_session.close()
+    
+    app.dependency_overrides[get_db] = override_get_db
+    with TestClient(app) as client:
+        yield client
+    app.dependency_overrides.clear()
 
 @pytest.fixture(scope="function")
 def utilisateurs(db_session: Session):
@@ -102,11 +120,41 @@ def repas_aliments(db_session: Session, aliments, repas):
             repas_aliments_data.append(RepasAliment(
                 repas=repa,
                 aliment=aliment,
-                quantite=100
+                quantite=100,
+                calories_totales=aliment.calories * 100
             ))
 
     db_session.add_all(repas_aliments_data)
+    db_session.commit()
     return repas_aliments_data
+
+@pytest.fixture(scope="function")
+def activites(db_session: Session, utilisateurs):
+    activites_data = [
+        ActivitePhysique(
+            type_activite=f"activite{key}",
+            date=datetime.date(2023, 1, 1),
+            heure=datetime.time(12, 0),
+            duree=datetime.timedelta(hours=1).total_seconds(),
+            utilisateur_id=utilisateur.id
+        ) for key, utilisateur in enumerate(utilisateurs)
+    ]
+    db_session.add_all(activites_data)
+    db_session.commit()
+    return activites_data
+
+@pytest.fixture(scope="function")
+def poids(db_session: Session, utilisateurs):
+    poids_data = [
+        Poids(
+            date=datetime.date(2023, 1, 1),
+            poids=71,
+            utilisateur_id=utilisateur.id
+        ) for utilisateur in utilisateurs
+    ]
+    db_session.add_all(poids_data)
+    db_session.commit()
+    return poids_data
 
 def populate_db(db: Session):
     # Utilisateurs
@@ -167,3 +215,4 @@ def populate_db(db: Session):
         db.add(db_aliment)
 
     db.commit()
+    

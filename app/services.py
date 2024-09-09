@@ -1,7 +1,6 @@
 import datetime
 
 from sqlalchemy import func
-
 from sqlalchemy.orm import Session
 from .models import (
     Aliment, Repas, RepasAliment,
@@ -10,11 +9,10 @@ from .models import (
 from .schemas import (
     UtilisateurCreate, UtilisateurOut,
     AlimentCreate, AlimentOut,
-    RepasAlimentOut, RepasCreate, RepasAlimentOutOne,
+    RepasAlimentOut, RepasCreate, RepasAlimentCreate,
     RepasOut, ListeRepasOut,
     ActivitePhysiqueCreate, ActivitePhysiqueOut,
-    PoidsOut, PoidsBase
-    
+    PoidsCreate, PoidsOut
 )
 
 # utilisateur CRUD
@@ -83,8 +81,8 @@ def update_utilisateur_password(db: Session, utilisateur: UtilisateurOut, new_pa
     pass
 
 # Delete
-def delete_utilisateur(db: Session, utilisateur: UtilisateurOut):
-    db_utilisateur = db.query(Utilisateur).filter(Utilisateur.id == utilisateur.id).first()
+def delete_utilisateur(db: Session, utilisateur_id: int):
+    db_utilisateur = db.query(Utilisateur).filter(Utilisateur.id == utilisateur_id).first()
     if db_utilisateur:
         db.delete(db_utilisateur)
         db.commit()
@@ -145,8 +143,8 @@ def get_aliments_by_categorie(db: Session, categorie: str):
     return selected_aliments
 
 #  Update
-def update_aliment(db: Session, aliment: AlimentOut):
-    db_aliment = db.query(Aliment).filter(Aliment.id == aliment.id).first()
+def update_aliment(db: Session, id:int, aliment: AlimentCreate):
+    db_aliment = db.query(Aliment).filter(Aliment.id == id).first()
     if db_aliment:
         db_aliment.nom = aliment.nom
         db_aliment.calories = aliment.calories
@@ -165,8 +163,8 @@ def update_aliment(db: Session, aliment: AlimentOut):
     return None
 
 # Delete
-def delete_aliment(db: Session, aliment: AlimentOut):
-    db_aliment = db.query(Aliment).filter(Aliment.id == aliment.id).first()
+def delete_aliment(db: Session, id: int):
+    db_aliment = db.query(Aliment).filter(Aliment.id == id).first()
     if db_aliment:
         db.delete(db_aliment)
         db.commit()
@@ -180,7 +178,7 @@ def create_repas(db: Session, repas: RepasCreate):
         type_repas=repas.type_repas,
         date=repas.date,
         heure=repas.heure,
-        utilisateur_id=repas.utilisateur.id
+        utilisateur_id=repas.utilisateur_id
     )
     db.add(db_repas)
     db.commit()
@@ -211,8 +209,8 @@ def query_repas(db: Session, db_repas: list):
     return repas_data
 
 # Read
-def get_repas(db: Session, utilisateur: UtilisateurOut):
-    db_repas = db.query(Repas).filter(Repas.utilisateur_id == utilisateur.id).all()
+def get_repas(db: Session, utilisateur_id: int):
+    db_repas = db.query(Repas).filter(Repas.utilisateur_id == utilisateur_id).all()
     if db_repas:
         return query_repas(db, db_repas)
     return None
@@ -224,22 +222,22 @@ def get_repas_by_id(db: Session, id: int):
     return None
 
 # Read by type
-def get_repas_by_type(db: Session, type_repas: str, utilisateur: UtilisateurOut):
-    db_repas = db.query(Repas).filter(Repas.type_repas == type_repas, Repas.utilisateur_id == utilisateur.id).all()
+def get_repas_by_type(db: Session, type_repas: str, utilisateur_id: int):
+    db_repas = db.query(Repas).filter(Repas.type_repas == type_repas, Repas.utilisateur_id == utilisateur_id).all()
     if db_repas:
         return query_repas(db, db_repas)
     return None
 
 # Read by date
-def get_repas_by_date(db: Session, date: datetime.date, utilisateur: UtilisateurOut):
-    db_repas = db.query(Repas).filter(Repas.date == date, Repas.utilisateur_id == utilisateur.id).all()
+def get_repas_by_date(db: Session, date: datetime.date, utilisateur_id: int):
+    db_repas = db.query(Repas).filter(Repas.date == date, Repas.utilisateur_id == utilisateur_id).all()
     if db_repas:
         return query_repas(db, db_repas)
     return None
 
 # Update
-def update_repas(db: Session, repas: RepasOut):
-    db_repas = db.query(Repas).filter(Repas.id == repas.id).first()
+def update_repas(db: Session, id:int, repas: RepasCreate):
+    db_repas = db.query(Repas).filter(Repas.id == id).first()
     if db_repas:
         db_repas.type_repas = repas.type_repas
         db_repas.date = repas.date
@@ -250,14 +248,15 @@ def update_repas(db: Session, repas: RepasOut):
             id=db_repas.id,
             type_repas=db_repas.type_repas,
             date=db_repas.date,
-            heure=db_repas.heure
+            heure=db_repas.heure,
+            utilisateur_id=db_repas.utilisateur_id
         )
         return selected_repas
     return None
 
 # Delete
-def delete_repas(db: Session, repas: RepasOut):
-    db_repas = db.query(Repas).filter(Repas.id == repas.id).first()
+def delete_repas(db: Session, id:int):
+    db_repas = db.query(Repas).filter(Repas.id == id).first()
     if db_repas:
         db.delete(db_repas)
         db.commit()
@@ -265,24 +264,31 @@ def delete_repas(db: Session, repas: RepasOut):
     return False
 
 # repas_aliment CRUD
-def add_aliment_to_repas(db: Session, repas_id: int, aliment: AlimentOut, quantite: float):
+def add_aliment_to_repas(db: Session, repas_id: int, aliment_id: int, quantite: float):
+    aliment_get = get_aliment(db, aliment_id)
+    repas = db.query(Repas).filter(Repas.id == repas_id).first()
+    if not repas:
+        raise Exception("Le repas n'existe pas")
     db_repas_aliment = RepasAliment(
         repas_id=repas_id,
-        aliment_id=aliment.id,
+        aliment_id=aliment_id,
         quantite=quantite,
-        calories_totales=aliment.calories * quantite
+        calories_totales=aliment_get.calories * quantite
     )
     db.add(db_repas_aliment)
     db.commit()
     db.refresh(db_repas_aliment)
     return db_repas_aliment
 
-# TODO: Read
+# Read
 def get_repas_aliment(db: Session, repas_id: int, aliment_id: int):
-    db_repas_aliment = db.query(RepasAliment).join(RepasAliment.repas).join(RepasAliment.aliment).filter(Repas.id == repas_id, Aliment.id == aliment_id).first()
+    db_repas_aliment = db.query(RepasAliment)\
+        .join(Repas, RepasAliment.repas_id == Repas.id)\
+        .join(Aliment, RepasAliment.aliment_id == Aliment.id)\
+        .filter(Repas.id == repas_id, Aliment.id == aliment_id).first()
     if db_repas_aliment:
-        repas_aliment = RepasAlimentOutOne(
-            aliment = get_aliment(db, db_repas_aliment.aliment_id),
+        repas_aliment = RepasAlimentCreate(
+            aliment_id = aliment_id,
             quantite = db_repas_aliment.quantite,
             calories_totales = db_repas_aliment.calories_totales,
             repas_id = repas_id
@@ -290,13 +296,37 @@ def get_repas_aliment(db: Session, repas_id: int, aliment_id: int):
         return repas_aliment
     return None
 
-# TODO: Update
-def update_repas_aliment():
-    pass
+# Update
+def update_repas_aliment(db: Session, repas_aliment: RepasAlimentCreate):
+    db_repas_aliment = db.query(RepasAliment)\
+    .join(Repas, RepasAliment.repas_id == Repas.id)\
+    .join(Aliment, RepasAliment.aliment_id == Aliment.id)\
+    .filter(Repas.id == repas_aliment.repas_id, Aliment.id == repas_aliment.aliment_id).first()
+    if db_repas_aliment:
+        db_repas_aliment.quantite = repas_aliment.quantite
+        db_repas_aliment.calories_totales = repas_aliment.calories_totales
+        db.commit()
+        db.refresh(db_repas_aliment)
+        selected_repas_aliment = RepasAlimentCreate(
+            aliment_id = db_repas_aliment.aliment_id,
+            quantite = db_repas_aliment.quantite,
+            calories_totales = db_repas_aliment.calories_totales,
+            repas_id = db_repas_aliment.repas_id
+        )
+        return selected_repas_aliment
+    return None
 
-# TODO: Delete
-def delete_repas_aliment():
-    pass
+# Delete
+def delete_repas_aliment(db: Session, repas_id: int, aliment_id: int):
+    db_repas_aliment = db.query(RepasAliment)\
+        .join(Repas, RepasAliment.repas_id == Repas.id)\
+        .join(Aliment, RepasAliment.aliment_id == Aliment.id)\
+        .filter(Repas.id == repas_id, Aliment.id == aliment_id).first()
+    if db_repas_aliment:
+        db.delete(db_repas_aliment)
+        db.commit()
+        return True
+    return False
 
 # activité physique CRUD
 def create_activite_physique(db: Session, activite: ActivitePhysiqueCreate, utilisateur_id: int):
@@ -304,7 +334,7 @@ def create_activite_physique(db: Session, activite: ActivitePhysiqueCreate, util
         type_activite=activite.type_activite,
         date=activite.date,
         heure=activite.heure,
-        duree=activite.duree,
+        duree=activite.duree.total_seconds(),
         utilisateur_id=utilisateur_id
     )
     db.add(db_activite)
@@ -312,40 +342,116 @@ def create_activite_physique(db: Session, activite: ActivitePhysiqueCreate, util
     db.refresh(db_activite)
     return db_activite
 
-# TODO: Read
-def create_activite_physique():
-    pass
+# Read
+def get_activite_physique(db: Session, utilisateur_id: int, id:int = -1):
+    if id == -1:
+        db_activite = db.query(ActivitePhysique).filter(ActivitePhysique.utilisateur_id == utilisateur_id).all()
+    else:
+        db_activite = db.query(ActivitePhysique).filter(ActivitePhysique.id == id).first()
+        db_activite = [db_activite] if db_activite else None
+    if db_activite:
+        activites_data = [
+            ActivitePhysiqueOut(
+                id=activite.id,
+                type_activite=activite.type_activite,
+                date=activite.date,
+                heure=activite.heure,
+                duree=activite.duree,
+                utilisateur_id=utilisateur_id
+            ) for activite in db_activite
+        ]
+        return activites_data
+    return None
 
-# TODO: Update
-def update_activite_physique():
-    pass
+# Update
+def update_activite_physique(db: Session, activite: ActivitePhysiqueCreate, id:int):
+    db_activite = db.query(ActivitePhysique).filter(ActivitePhysique.id == id).first()
+    if db_activite:
+        if activite.utilisateur_id:
+            db_activite.utilisateur_id = activite.utilisateur_id
+        db_activite.type_activite = activite.type_activite
+        db_activite.date = activite.date
+        db_activite.heure = activite.heure
+        db_activite.duree = activite.duree.total_seconds()
+        db.commit()
+        db.refresh(db_activite)
+        selected_activite = ActivitePhysiqueOut(
+            id=db_activite.id,
+            type_activite=db_activite.type_activite,
+            date=db_activite.date,
+            heure=db_activite.heure,
+            duree=db_activite.duree,
+            utilisateur_id=db_activite.utilisateur_id
+        )
+        return selected_activite
+    return None
 
-# TODO: Delete
-def delete_activite_physique():
-    pass
+# Delete
+def delete_activite_physique(db: Session, id: int):
+    db_activite = db.query(ActivitePhysique).filter(ActivitePhysique.id == id).first()
+    if db_activite:
+        db.delete(db_activite)
+        db.commit()
+        return True
+    return False
 
 # poids CRUD
-def create_poids(db: Session, poids: float, utilisateur_id: int):
+def create_poids(db: Session, poids: PoidsCreate):
     db_poids = Poids(
-        poids=poids,
-        utilisateur_id=utilisateur_id
+        poids=poids.poids,
+        date=poids.date,
+        utilisateur_id=poids.utilisateur_id
     )
     db.add(db_poids)
     db.commit()
     db.refresh(db_poids)
     return db_poids
 
-# TODO: Read
-def get_poids():
-    pass
+# Read
+def get_poids(db: Session, utilisateur_id: int, id:int = -1):
+    if id == -1:
+        db_poids = db.query(Poids).filter(Poids.utilisateur_id == utilisateur_id).all()
+    else:
+        db_poids = db.query(Poids).filter(Poids.id == id).first()
+        db_poids = [db_poids] if db_poids else None
+    if db_poids:
+        poids_data = [
+            PoidsOut(
+                id=poids.id,
+                poids=poids.poids,
+                date=poids.date,
+                utilisateur_id=utilisateur_id
+            ) for poids in db_poids
+        ]
+        return poids_data
+    return None
 
-# TODO: Update
-def update_poids():
-    pass
+# Update
+def update_poids(db: Session, id:int, poids: PoidsCreate):
+    db_poids = db.query(Poids).filter(Poids.id == id).first()
+    if db_poids:
+        db_poids.poids = poids.poids
+        db_poids.date = poids.date
+        db_poids.utilisateur_id = poids.utilisateur_id
+        db.commit()
+        db.refresh(db_poids)
+        selected_poids = PoidsOut(
+            id=db_poids.id,
+            poids=db_poids.poids,
+            date=db_poids.date,
+            utilisateur_id=poids.utilisateur_id
+        )
+        return selected_poids
+    return None
 
-# TODO: Delete
-def delete_poids():
-    pass
+# Delete
+def delete_poids(db: Session, id:int):
+    db_poids = db.query(Poids).filter(Poids.id == id).first()
+    if db_poids:
+        db.delete(db_poids)
+        db.commit()
+        return True
+    return False
 
 def get_total_calories_for_repas(db: Session, repas_id: int):
     total_calories = db.query(
