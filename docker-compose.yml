@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        DB_PATH: /app/db  # Chemin pour stocker la base de données SQLite dans le conteneur
+    environment:
+      - ENVIRONMENT=production
+      - DB_PATH=/app/db  # Chemin pour la base de données SQLite
+    volumes:
+      - ./db_data:/app/db  # Monte un volume local pour persister les données SQLite
+    ports:
+      - "8345:8345"  # Expose le port 8345 de l'application
