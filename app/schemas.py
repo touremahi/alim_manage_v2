@@ -1,12 +1,23 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, EmailStr
 from datetime import date, time, timedelta
 from typing import List, Optional
 
 class UtilisateurBase(BaseModel):
     nom: str
-    email: str
+    email: EmailStr
     age: int
     poids_initial: float
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "nom": "John Doe",
+                "email": "johndoe@example.com",
+                "age": 30,
+                "poids_initial": 70.5
+            }
+        }
+    }
 
 class UtilisateurCreate(UtilisateurBase):
     mot_de_passe: str

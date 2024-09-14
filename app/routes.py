@@ -216,7 +216,7 @@ def route_get_repas_by_utilisateur(
     }
 
 # Repas par date
-@router.get("/repas/user_{utilisateur_id}/{date}", response_model=List[ListeRepasOut])
+@router.get("/repas/user_{utilisateur_id}/d_{date}", response_model=List[ListeRepasOut])
 def route_get_repas_by_date(
     date: str,
     utilisateur_id: int,
@@ -234,14 +234,14 @@ def route_get_repas_by_date(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=message)
 
 # Repas par type_repas
-@router.get("/repas/user_{utilisateur_id}/type_{type_repas}", response_model=List[ListeRepasOut])
+@router.get("/repas/user_{utilisateur_id}/t_{type_repas}", response_model=List[ListeRepasOut])
 def route_get_repas_by_type(
     type_repas: str,
     utilisateur_id: int,
     db: Session = Depends(get_db)
 ):
     try:
-        repas_type = get_repas_by_type(db=db, type_repas=type_repas, utilisateur_id=utilisateur_id)
+        repas_type = get_repas_by_type(db=db, utilisateur_id=utilisateur_id, type_repas=type_repas)
         if repas_type:
             return repas_type
         message = f"Aucun repas trouvé pour le type {type_repas}."

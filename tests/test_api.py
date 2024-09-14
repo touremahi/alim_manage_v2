@@ -165,7 +165,7 @@ def test_get_repas_by_id(client, repas, repas_aliments):
 def test_get_repas_by_date(client, repas):
     repas_date = repas[0].date.strftime("%Y-%m-%d")
     response = client.get(
-        f"/api/repas/user_{repas[0].utilisateur_id}/{repas_date}"
+        f"/api/repas/user_{repas[0].utilisateur_id}/d_{repas_date}"
     )
     assert response.status_code == 200
     assert isinstance(response.json(), list)
@@ -175,8 +175,9 @@ def test_get_repas_by_date(client, repas):
 # get repas by type_repas
 def test_get_repas_by_type(client, repas):
     type_repas = repas[0].type_repas
+    user_repas = repas[0].utilisateur_id
     response = client.get(
-        f"/api/repas/user_{repas[0].utilisateur_id}/{type_repas}"
+        f"/api/repas/user_{user_repas}/t_{type_repas}"
     )
     assert response.status_code == 200
     assert isinstance(response.json(), list)
